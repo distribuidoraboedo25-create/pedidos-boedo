@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pedidos Boedo">
+<meta name="theme-color" content="#1a1a2e">
+<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;Pedidos Boedo&quot;,&quot;short_name&quot;:&quot;Pedidos&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%231a1a2e&quot;,&quot;theme_color&quot;:&quot;%231a1a2e&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;https://img.icons8.com/fluency/192/box.png&quot;,&quot;sizes&quot;:&quot;192x192&quot;,&quot;type&quot;:&quot;image/png&quot;}]}">
+<title>Pedidos Boedo</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { height: 100%; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: #f0f2f5; min-height: 100vh; font-size: 16px; }
+
+.pantalla { display: none; min-height: 100vh; }
+.pantalla.activa { display: block; }
+
+/* LOGIN */
+.login-wrap { display: flex; flex-direction: column; justify-content: center; min-height: 100vh; padding: 32px 20px; max-width: 420px; margin: 0 auto; }
+.logo-box { text-align: center; margin-bottom: 40px; }
+.logo-icon { font-size: 64px; margin-bottom: 12px; }
+.logo-titulo { font-size: 24px; font-weight: 800; color: #1a1a2e; }
+.logo-sub { font-size: 14px; color: #888; margin-top: 6px; }
+.card { background: white; border-radius: 20px; padding: 24px; margin-bottom: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+.input-group { margin-bottom: 16px; }
+.input-group label { display: block; font-size: 13px; font-weight: 700; color: #444; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.input-group input { width: 100%; padding: 16px; border: 2px solid #e8e8e8; border-radius: 14px; font-size: 16px; background: #fafafa; transition: all 0.2s; -webkit-appearance: none; }
+.input-group input:focus { border-color: #1a1a2e; background: white; outline: none; box-shadow: 0 0 0 4px rgba(26,26,46,0.08); }
+
+/* BOTONES */
+.btn { width: 100%; padding: 18px; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 10px; transition: all 0.15s; -webkit-appearance: none; letter-spacing: 0.3px; }
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: #1a1a2e; color: white; }
+.btn-success { background: #22c55e; color: white; }
+.btn-secondary { background: #f0f2f5; color: #444; }
+.btn-outline { background: transparent; border: 2px solid #1a1a2e; color: #1a1a2e; padding: 16px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* HEADER */
+.top-bar { display: flex; justify-content: space-between; align-items: center; padding: 20px 16px 12px; background: white; box-shadow: 0 1px 8px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 10; }
+.top-bar h2 { font-size: 20px; font-weight: 800; color: #1a1a2e; }
+.usuario-chip { background: #1a1a2e; color: white; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+
+/* CONTENIDO */
+.contenido { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+/* TARJETAS PEDIDO */
+.orden-card { background: white; border-radius: 18px; padding: 18px; margin-bottom: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); cursor: pointer; border-left: 5px solid #1a1a2e; transition: transform 0.15s, box-shadow 0.15s; }
+.orden-card:active { transform: scale(0.99); box-shadow: 0 1px 6px rgba(0,0,0,0.1); }
+.orden-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.orden-numero { font-size: 18px; font-weight: 800; color: #1a1a2e; }
+.badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+.badge-pendiente { background: #fef9c3; color: #854d0e; }
+.badge-enproceso { background: #dbeafe; color: #1e40af; }
+.badge-terminado { background: #dcfce7; color: #166534; }
+.orden-cliente { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 4px; }
+.orden-fecha { font-size: 13px; color: #999; margin-bottom: 8px; }
+.orden-total { font-size: 17px; font-weight: 800; color: #22c55e; }
+.orden-aviso { font-size: 12px; color: #dc2626; margin-top: 6px; font-weight: 600; }
+
+/* DETALLE */
+.detalle-header { background: #1a1a2e; color: white; padding: 20px 16px; margin-bottom: 0; }
+.detalle-header h2 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+.detalle-header p { font-size: 13px; opacity: 0.75; margin-top: 3px; line-height: 1.5; }
+
+/* PROGRESO */
+.progreso-wrap { background: white; padding: 14px 16px; margin-bottom: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.progreso-texto { font-size: 13px; color: #666; margin-bottom: 8px; text-align: center; font-weight: 600; }
+.progreso-bar-bg { background: #e5e7eb; border-radius: 10px; height: 10px; }
+.progreso-bar { background: #22c55e; height: 10px; border-radius: 10px; transition: width 0.4s; }
+
+/* PRODUCTO ROW */
+.producto-row { background: white; border-radius: 16px; padding: 14px; margin: 0 16px 10px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); transition: all 0.2s; }
+.producto-row.confirmado { background: #f0fdf4; border: 2px solid #86efac; }
+.producto-top { display: flex; align-items: center; gap: 10px; }
+.producto-info { flex: 1; min-width: 0; }
+.producto-nombre { font-size: 14px; font-weight: 700; line-height: 1.4; color: #1a1a2e; }
+.producto-nombre.tachado { text-decoration: line-through; color: #aaa; }
+.producto-detalle { font-size: 12px; color: #888; margin-top: 4px; }
+
+/* CANTIDAD */
+.qty-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.qty-btn { width: 36px; height: 36px; border: 2px solid #1a1a2e; background: white; border-radius: 10px; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 800; line-height: 1; transition: all 0.15s; -webkit-appearance: none; }
+.qty-btn:active { background: #1a1a2e; color: white; }
+.qty-btn:disabled { border-color: #ddd; color: #ddd; cursor: not-allowed; }
+.qty-num { width: 44px; text-align: center; font-size: 17px; font-weight: 800; color: #1a1a2e; }
+
+/* OK BUTTON */
+.btn-ok { width: 42px; height: 42px; border: none; border-radius: 50%; font-size: 20px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; -webkit-appearance: none; }
+.btn-ok.pendiente { background: #e5e7eb; color: #9ca3af; }
+.btn-ok.ok { background: #22c55e; color: white; box-shadow: 0 2px 8px rgba(34,197,94,0.4); }
+
+/* NOTAS */
+.nota-section { margin-top: 10px; }
+.btn-nota { background: none; border: 1.5px solid #f59e0b; border-radius: 8px; padding: 6px 14px; font-size: 12px; color: #b45309; cursor: pointer; font-weight: 700; -webkit-appearance: none; }
+.nota-guardada { display: block; font-size: 12px; color: #92400e; background: #fef3c7; padding: 6px 12px; border-radius: 8px; margin-top: 6px; word-break: break-word; }
+.nota-box { margin-top: 8px; }
+.nota-textarea { width: 100%; padding: 12px; border: 2px solid #f59e0b; border-radius: 12px; font-size: 15px; font-family: inherit; resize: none; min-height: 80px; -webkit-appearance: none; }
+.nota-textarea:focus { outline: none; border-color: #d97706; }
+.btn-guardar-nota { margin-top: 8px; background: #1a1a2e; color: white; border: none; border-radius: 10px; padding: 10px 20px; font-size: 14px; font-weight: 700; cursor: pointer; -webkit-appearance: none; }
+
+/* MENSAJES */
+.msg { padding: 14px 16px; border-radius: 14px; margin-bottom: 12px; font-size: 14px; text-align: center; font-weight: 600; }
+.msg-error { background: #fee2e2; color: #b91c1c; }
+.msg-ok { background: #dcfce7; color: #15803d; }
+
+/* LOADING */
+.loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 16px; color: #999; }
+.spinner { width: 40px; height: 40px; border: 3px solid #e5e7eb; border-top: 3px solid #1a1a2e; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 14px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.vacio { text-align: center; padding: 60px 16px; color: #aaa; }
+.vacio-icon { font-size: 56px; margin-bottom: 12px; }
+.vacio-txt { font-size: 16px; font-weight: 600; }
+
+/* ACCIONES */
+.acciones { padding: 16px; padding-bottom: 32px; max-width: 600px; margin: 0 auto; }
+
+/* BANNER PWA */
+.pwa-banner { background: #1a1a2e; color: white; padding: 12px 16px; font-size: 13px; text-align: center; display: none; }
+.pwa-banner.visible { display: block; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="pantalla-login" class="pantalla activa">
+  <div class="login-wrap">
+    <div class="logo-box">
+      <div class="logo-icon">📦</div>
+      <div class="logo-titulo">Distribuidora Boedo</div>
+      <div class="logo-sub">Sistema de Pedidos</div>
+    </div>
+    <div id="msg-login"></div>
+    <div class="input-group">
+      <label>Usuario</label>
+      <input type="text" id="input-usuario" placeholder="Tu usuario" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <div class="input-group">
+      <label>Contraseña</label>
+      <input type="password" id="input-password" placeholder="Tu contraseña" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" onclick="iniciarSesion()">Ingresar</button>
+  </div>
+</div>
+
+<!-- LISTA -->
+<div id="pantalla-lista" class="pantalla">
+  <div class="top-bar">
+    <h2>📋 Pedidos</h2>
+    <span class="usuario-chip" id="badge-usuario"></span>
+  </div>
+  <div class="contenido">
+    <div id="msg-lista"></div>
+    <div id="lista-pedidos">
+      <div class="loading"><div class="spinner"></div>Cargando...</div>
+    </div>
+    <button class="btn btn-secondary" onclick="cargarPedidos()" style="margin-top:4px">🔄 Actualizar</button>
+    <button class="btn btn-outline" onclick="cerrarSesion()">Cerrar sesión</button>
+  </div>
+</div>
+
+<!-- DETALLE -->
+<div id="pantalla-detalle" class="pantalla">
+  <div class="detalle-header">
+    <h2 id="detalle-titulo"></h2>
+    <p id="detalle-cliente"></p>
+    <p id="detalle-direccion"></p>
+  </div>
+  <div class="progreso-wrap">
+    <div class="progreso-texto" id="progreso-texto"></div>
+    <div class="progreso-bar-bg"><div class="progreso-bar" id="progreso-bar" style="width:0%"></div></div>
+  </div>
+  <div id="msg-detalle" style="padding:0 16px"></div>
+  <div id="detalle-productos"></div>
+  <div class="acciones">
+    <button class="btn btn-success" id="btn-terminar" onclick="terminarPedido()" disabled>✅ Terminar Pedido</button>
+    <button class="btn btn-secondary" onclick="volverLista()">← Volver</button>
+  </div>
+</div>
+
+<script>
+const URL_API = 'https://script.google.com/macros/s/AKfycbxK7UJ1nYVE85dF9wdqZx7GocOWCawDkKcdZJrN50Y0hxdOcnihXw9U5fOuY0Lp0A/exec';
+const SESSION_KEY = 'boedo_session';
+const SESSION_HOURS = 24;
+
+let usuarioActual = '';
+let pedidoActual = null;
+let productosActuales = [];
+let cantidades = [];
+let confirmados = [];
+let notas = [];
+let notaAbierta = -1;
+
+// Verificar sesión guardada al cargar
+window.addEventListener('load', () => {
+  const session = getSession();
+  if (session) {
+    usuarioActual = session.nombre;
+    document.getElementById('badge-usuario').textContent = usuarioActual;
+    mostrar('pantalla-lista');
+    cargarPedidos();
+  }
+  // Banner PWA en iOS
+  const isIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+  const isStandalone = window.navigator.standalone;
+  if (isIOS && !isStandalone) {
+    const banner = document.createElement('div');
+    banner.className = 'pwa-banner visible';
+    banner.innerHTML = '📲 Para instalar: tocá <b>Compartir</b> → <b>Agregar a inicio</b>';
+    document.body.prepend(banner);
+  }
+});
+
+function getSession() {
+  try {
+    const data = JSON.parse(localStorage.getItem(SESSION_KEY));
+    if (!data) return null;
+    const ahora = new Date().getTime();
+    const expira = data.timestamp + (SESSION_HOURS * 60 * 60 * 1000);
+    if (ahora > expira) { localStorage.removeItem(SESSION_KEY); return null; }
+    return data;
+  } catch(e) { return null; }
+}
+
+function saveSession(nombre) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ nombre, timestamp: new Date().getTime() }));
+}
+
+function clearSession() {
+  localStorage.removeItem(SESSION_KEY);
+}
+
+function mostrar(id) {
+  document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+  document.getElementById(id).classList.add('activa');
+  window.scrollTo(0, 0);
+}
+
+function formatearFecha(f) {
+  if (!f) return '';
+  try {
+    const d = new Date(f);
+    if (isNaN(d)) return f;
+    return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear()+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+  } catch(e) { return f; }
+}
+
+function iniciarSesion() {
+  const usuario = document.getElementById('input-usuario').value.trim();
+  const password = document.getElementById('input-password').value.trim();
+  const msg = document.getElementById('msg-login');
+  if (!usuario || !password) {
+    msg.innerHTML = '<div class="msg msg-error">Completá usuario y contraseña</div>';
+    return;
+  }
+  msg.innerHTML = '<div class="loading"><div class="spinner"></div>Verificando...</div>';
+  fetch(URL_API + '?accion=login&usuario=' + encodeURIComponent(usuario) + '&password=' + encodeURIComponent(password))
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        usuarioActual = data.nombre;
+        saveSession(data.nombre);
+        document.getElementById('badge-usuario').textContent = usuarioActual;
+        mostrar('pantalla-lista');
+        cargarPedidos();
+      } else {
+        msg.innerHTML = '<div class="msg msg-error">Usuario o contraseña incorrectos</div>';
+      }
+    })
+    .catch(() => { msg.innerHTML = '<div class="msg msg-error">Error de conexión. Intentá de nuevo.</div>'; });
+}
+
+function cerrarSesion() {
+  clearSession();
+  usuarioActual = '';
+  pedidoActual = null;
+  document.getElementById('input-usuario').value = '';
+  document.getElementById('input-password').value = '';
+  mostrar('pantalla-login');
+}
+
+function cargarPedidos() {
+  const div = document.getElementById('lista-pedidos');
+  div.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando pedidos...</div>';
+  fetch(URL_API + '?accion=listarPedidos')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.pedidos || data.pedidos.length === 0) {
+        div.innerHTML = '<div class="vacio"><div class="vacio-icon">📭</div><div class="vacio-txt">No hay pedidos pendientes</div></div>';
+        return;
+      }
+      div.innerHTML = data.pedidos.map(p => `
+        <div class="orden-card" onclick="abrirPedido('${p.id}')">
+          <div class="orden-top">
+            <div class="orden-numero">Orden #${p.id}</div>
+            <span class="badge badge-${p.estado.replace(' ','').toLowerCase()}">${p.estado}</span>
+          </div>
+          <div class="orden-cliente">👤 ${p.cliente}</div>
+          <div class="orden-fecha">📅 ${formatearFecha(p.fecha)}</div>
+          <div class="orden-total">${p.total}</div>
+          ${p.estado === 'En Proceso' ? `<div class="orden-aviso">⚠️ En proceso por: ${p.usuario}</div>` : ''}
+        </div>
+      `).join('');
+    })
+    .catch(() => { div.innerHTML = '<div class="msg msg-error">Error cargando pedidos</div>'; });
+}
+
+function abrirPedido(idOrden) {
+  document.getElementById('lista-pedidos').innerHTML = '<div class="loading"><div class="spinner"></div>Cargando pedido...</div>';
+  fetch(URL_API + '?accion=tomarPedido&idOrden=' + idOrden + '&usuario=' + encodeURIComponent(usuarioActual))
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) {
+        document.getElementById('msg-lista').innerHTML = '<div class="msg msg-error">' + data.mensaje + '</div>';
+        setTimeout(() => { document.getElementById('msg-lista').innerHTML = ''; cargarPedidos(); }, 3000);
+        return;
+      }
+      pedidoActual = data.pedido;
+      productosActuales = data.productos;
+      cantidades = productosActuales.map(p => parseInt(p.cantidad) || 0);
+      confirmados = new Array(productosActuales.length).fill(false);
+      notas = new Array(productosActuales.length).fill('');
+      notaAbierta = -1;
+      mostrarDetalle();
+    });
+}
+
+function mostrarDetalle() {
+  document.getElementById('detalle-titulo').textContent = 'Orden #' + pedidoActual.id;
+  document.getElementById('detalle-cliente').textContent = '👤 ' + pedidoActual.cliente;
+  document.getElementById('detalle-direccion').textContent = '📍 ' + pedidoActual.direccion;
+  renderProductos();
+  actualizarProgreso();
+  mostrar('pantalla-detalle');
+}
+
+function renderProductos() {
+  const div = document.getElementById('detalle-productos');
+  div.innerHTML = productosActuales.map((p, i) => `
+    <div class="producto-row ${confirmados[i] ? 'confirmado' : ''}">
+      <div class="producto-top">
+        <div class="producto-info">
+          <div class="producto-nombre ${confirmados[i] ? 'tachado' : ''}">${p.nombre}</div>
+          <div class="producto-detalle">$${p.precio} c/u &nbsp;·&nbsp; Pedido: ${p.cantidad}</div>
+        </div>
+        <div class="qty-wrap">
+          <button class="qty-btn" ${confirmados[i] ? 'disabled' : ''} onclick="cambiarCantidad(${i},-1)">−</button>
+          <div class="qty-num" id="qty-${i}">${cantidades[i]}</div>
+          <button class="qty-btn" ${confirmados[i] ? 'disabled' : ''} onclick="cambiarCantidad(${i},1)">+</button>
+        </div>
+        <button class="btn-ok ${confirmados[i] ? 'ok' : 'pendiente'}" onclick="toggleConfirmar(${i})">
+          ${confirmados[i] ? '✓' : '○'}
+        </button>
+      </div>
+      <div class="nota-section">
+        <button class="btn-nota" onclick="toggleNota(${i})">${notas[i] ? '📝 Editar nota' : '📝 Nota'}</button>
+        ${notas[i] ? `<span class="nota-guardada">📝 ${notas[i]}</span>` : ''}
+        ${notaAbierta === i ? `
+          <div class="nota-box">
+            <textarea class="nota-textarea" id="nota-input-${i}" placeholder="Ej: se reemplazó color, se sumó producto extra...">${notas[i]}</textarea>
+            <button class="btn-guardar-nota" onclick="guardarNota(${i})">Guardar nota</button>
+          </div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function cambiarCantidad(i, delta) {
+  cantidades[i] = Math.max(0, cantidades[i] + delta);
+  document.getElementById('qty-' + i).textContent = cantidades[i];
+}
+
+function toggleConfirmar(i) {
+  confirmados[i] = !confirmados[i];
+  renderProductos();
+  actualizarProgreso();
+  if (notaAbierta >= 0) {
+    setTimeout(() => {
+      const el = document.getElementById('nota-input-' + notaAbierta);
+      if (el) el.focus();
+    }, 50);
+  }
+}
+
+function toggleNota(i) {
+  notaAbierta = notaAbierta === i ? -1 : i;
+  renderProductos();
+  setTimeout(() => {
+    const el = document.getElementById('nota-input-' + i);
+    if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+  }, 50);
+}
+
+function guardarNota(i) {
+  const el = document.getElementById('nota-input-' + i);
+  if (el) notas[i] = el.value.trim();
+  notaAbierta = -1;
+  renderProductos();
+}
+
+function actualizarProgreso() {
+  const total = confirmados.length;
+  const hechos = confirmados.filter(Boolean).length;
+  const pct = total > 0 ? Math.round(hechos / total * 100) : 0;
+  document.getElementById('progreso-texto').textContent = hechos + ' de ' + total + ' productos confirmados';
+  document.getElementById('progreso-bar').style.width = pct + '%';
+  const btn = document.getElementById('btn-terminar');
+  btn.disabled = hechos < total;
+}
+
+function terminarPedido() {
+  const btn = document.getElementById('btn-terminar');
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+  const payload = productosActuales.map((p, i) => ({
+    id: p.id,
+    cantidadFinal: cantidades[i],
+    nota: notas[i] || ''
+  }));
+  fetch(URL_API, {
+    method: 'POST',
+    body: JSON.stringify({ accion: 'terminarPedido', idOrden: pedidoActual.id, usuario: usuarioActual, cantidades: payload })
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        document.getElementById('msg-detalle').innerHTML = '<div class="msg msg-ok">✅ Pedido terminado. El PDF se genera en Drive.</div>';
+        setTimeout(() => volverLista(), 2500);
+      } else {
+        document.getElementById('msg-detalle').innerHTML = '<div class="msg msg-error">' + data.mensaje + '</div>';
+        btn.disabled = false;
+        btn.textContent = '✅ Terminar Pedido';
+      }
+    })
+    .catch(() => {
+      document.getElementById('msg-detalle').innerHTML = '<div class="msg msg-error">Error de conexión</div>';
+      btn.disabled = false;
+      btn.textContent = '✅ Terminar Pedido';
+    });
+}
+
+function volverLista() {
+  pedidoActual = null;
+  notaAbierta = -1;
+  mostrar('pantalla-lista');
+  cargarPedidos();
+}
+</script>
+</body>
+</html>
